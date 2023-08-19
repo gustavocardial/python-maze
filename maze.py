@@ -2,7 +2,7 @@
 import os
 import sys
 import pygame
-
+import random
 
 # Class for the orange dude
 class Player(object):
@@ -86,10 +86,48 @@ for row in level:
 	y += 16
 	x = 0
 
+fronteira = [] #opções de coordenadas a explorar, mantida sempre em memória
+visitados = [] #coordenadas já visitadas, mantida sempre em memória
+
 running = True
 while running:
+
+	#coord/posição atual
+	x_atual = player.rect.x
+	y_atual = player.rect.y
 	
-	clock.tick(10)
+	#coord/posições vizinhas
+	coord_cima  = (x_atual, y_atual - 16)
+	coord_baixo = (x_atual, y_atual + 16)
+	coord_esq   = (x_atual - 16, y_atual)
+	coord_dir   = (x_atual + 16, y_atual)	
+
+	coord_vizinhas = [coord_cima, coord_baixo, coord_esq, coord_dir]
+	
+	#checa quais vizinhos não são parede
+	for coord in coord_vizinhas:
+		if coord not in visitados: #não analisa coords já visitadas
+			eh_parede = False
+			for i,wall in enumerate(walls):
+				if coord[0] == wall.rect[0] and coord[1] == wall.rect[1]:
+					eh_parede = True
+			if not eh_parede: #não é parede, adiciona na fronteira
+				fronteira.append(coord)
+
+	#sorteia uma coordenada aleatória da fronteira, pra explorar/expandir
+	coord_prox = random.choice(fronteira)
+
+	#remove da fronteira a coordenada sorteada
+	fronteira.remove(coord_prox)
+	
+	#move o agente
+	player.rect.x = coord_prox[0]
+	player.rect.y = coord_prox[1]
+	
+	#adiciona a coordenada visitada à lista de visitados
+	visitados.append(coord_prox)
+	
+	clock.tick(10) #frequência, ou seja: quanto maior, mais rápido
 
 	for e in pygame.event.get():
 		if e.type == pygame.QUIT:
@@ -97,7 +135,7 @@ while running:
 		if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
 			running = False
 
-
+		'''
 		if e.type == pygame.KEYDOWN:
 			# Process arrow keys here
 			if e.key == pygame.K_LEFT:
@@ -108,7 +146,7 @@ while running:
 				player.move(0, -16)
 			elif e.key == pygame.K_DOWN:
 				player.move(0, 16)
-			
+		'''
 
 	'''
 	# Move the player if an arrow key is pressed
